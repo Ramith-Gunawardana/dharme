@@ -6,10 +6,10 @@ import 'package:senses/constants.dart';
 import 'package:senses/classes/model.dart';
 import 'dart:io';
 import 'dart:convert';
-// import 'package:flutter_sound/flutter_sound.dart';
+import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
-// import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ListeningScreen extends StatefulWidget {
   // final Model selectedModel;
@@ -24,79 +24,128 @@ class ListeningScreen extends StatefulWidget {
 }
 
 class _ListeningScreenState extends State<ListeningScreen> {
-  // final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
-  bool _isRecording = false;
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  bool isRecording = false;
   String? _filePath;
   List<Map<String, dynamic>> predictions = [];
   String? currentJobId;
   Timer? _timer;
   Duration _duration = Duration.zero;
 
+  @override
+  void initState() {
+    super.initState();
+    _initializeRecorder();
+  }
+
   Future<void> _initializeRecorder() async {
-    await Permission.microphone.request();
-    // await _recorder.openRecorder();
+    if (await _requestMicrophonePermission()) {
+      await _recorder.openRecorder();
+    } else {
+      _showPermissionDeniedDialog();
+    }
+  }
+
+  Future<bool> _requestMicrophonePermission() async {
+    var status = await Permission.microphone.status;
+    if (!status.isGranted) {
+      status = await Permission.microphone.request();
+    }
+    return status.isGranted;
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Permission Denied'),
+        content:
+            const Text('Microphone permission is required to record audio.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _startRecording() async {
-    // Directory tempDir = await getTemporaryDirectory();
-    // _filePath = '${tempDir.path}/audio.wav';
-    // await _recorder.startRecorder(toFile: _filePath, codec: Codec.pcm16WAV);
-    setState(() => _isRecording = true);
+    if (await _requestMicrophonePermission()) {
+      setState(() {
+        isRecording = true;
+      });
+      _recordInChunks();
+    }
+  }
+
+  Future<void> _recordInChunks() async {
+    while (isRecording) {
+      final tempDir = await getTemporaryDirectory();
+      final filePath =
+          '${tempDir.path}/chunk_${DateTime.now().millisecondsSinceEpoch}.wav';
+
+      await _recorder.startRecorder(toFile: filePath);
+
+      // Wait for 4 seconds before stopping the recorder
+      await Future.delayed(const Duration(seconds: 4));
+      await _recorder.stopRecorder();
+
+      // Upload the audio file in the background
+      _uploadAudioFile(File(filePath));
+    }
+  }
+
+  Future<void> _uploadAudioFile(File audioFile) async {
+    final uri = Uri.parse(
+      // 'https://4tnwcv11y4.execute-api.ap-south-1.amazonaws.com/predict?job_id=${currentJobId}',
+        'http://192.168.8.183:5000/upload'
+    );
+
+    var request = http.MultipartRequest('POST', uri);
+    request.files
+        .add(await http.MultipartFile.fromPath('file', audioFile.path));
+
+    try {
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final jsonData = jsonDecode(responseData);
+        _handleResponse(jsonData);
+      } else {
+        print('Failed to upload audio: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error uploading audio: $e');
+    }
+  }
+
+  void _handleResponse(Map<String, dynamic> data) {
+    if (data['status'] == 'success') {
+      final displayData = {
+        'name': data['display_names_for_training_classes']['display_name'],
+        'icon': data['display_names_for_training_classes']['icon'],
+        'color': data['display_names_for_training_classes']['color'],
+      };
+
+      setState(() {
+        predictions.add(displayData);
+      });
+    }
   }
 
   Future<void> _stopRecording() async {
-    // await _recorder.stopRecorder();
-    setState(() => _isRecording = false);
-    if (_filePath != null) {
-      await _uploadAudio(_filePath!);
-    }
-  }
-
-  Future<void> _uploadAudio(String filePath) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse(
-          'https://4tnwcv11y4.execute-api.ap-south-1.amazonaws.com/predict?job_id=$currentJobId'),
-    );
-    request.files
-        .add(await http.MultipartFile.fromPath('audio_file', filePath));
-
-    var response = await request.send();
-    if (response.statusCode == 200) {
-      var responseData = await response.stream.bytesToString();
-      _handlePredictionResponse(responseData);
-    } else {
-      print('Failed to upload audio: ${response.statusCode}');
-    }
-  }
-
-  void _handlePredictionResponse(String responseData) {
-    final data = jsonDecode(responseData);
-    if (data['status'] == 'success') {
-      predictions.add({
-        'display_name': data['display_names_for_training_classes']
-            ['display_name'],
-        'icon': data['display_names_for_training_classes']['icon'],
-        'color': data['display_names_for_training_classes']['color'],
-      });
-      setState(() {});
-    } else {
-      print('Failed to get predictions');
-    }
-  }
-
-  // Starts counting time
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _duration = Duration(seconds: _duration.inSeconds + 1);
-      });
+    setState(() {
+      isRecording = false;
     });
+    await _recorder.stopRecorder();
   }
 
-// Stops counting time
-  void _stopTimer() {
-    _timer?.cancel();
+  @override
+  void dispose() {
+    _recorder.closeRecorder();
+    super.dispose();
   }
 
 // Formats recording time
@@ -105,20 +154,6 @@ class _ListeningScreenState extends State<ListeningScreen> {
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
     return '$twoDigitMinutes:$twoDigitSeconds';
-  }
-
-  @override
-  void dispose() {
-    // _recorder.closeRecorder();
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // currentJobId = widget.selectedModel.jobId;
-    _initializeRecorder();
   }
 
   @override
@@ -186,7 +221,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       child: Column(
                         children: [
                           Text(
-                            _isRecording
+                            isRecording
                                 ? "Recording: ${_formatDuration(_duration)}"
                                 : _filePath != null
                                     ? "Recorded: ${_formatDuration(_duration)}"
@@ -194,10 +229,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
                             style: kSubHeadingTextStyle,
                           ),
                           PrimaryButton(
-                              title: _isRecording
+                              title: isRecording
                                   ? "Stop Recording"
                                   : "Start Recording",
-                              process: _isRecording
+                              process: isRecording
                                   ? _stopRecording
                                   : _startRecording),
                         ],
