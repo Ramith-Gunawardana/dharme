@@ -1,0 +1,5 @@
+package com.example.senses
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity()
