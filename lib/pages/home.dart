@@ -76,6 +76,9 @@ class _HomeState extends State<Home> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const Image(
+                  image: AssetImage("assets/gif/splash.gif"),
+                ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Text(
@@ -86,45 +89,64 @@ class _HomeState extends State<Home> {
                 ),
                 // SecondaryButton(title: "Fetch Models", process: fetchModels),
                 models.isNotEmpty
-                    ? DropdownButton<Model>(
-                        value: selectedModel,
-                        items: models.map((model) {
-                          return DropdownMenuItem(
-                            value: model,
-                            child: Text(model.approveName),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedModel = value;
-                          });
-                        },
+                    ? Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: kOceanBlueColor,
+                            width: 2,
+                          ),
+                          borderRadius:
+                              BorderRadius.circular(8), // Rounded corners
+                          color: Colors.white, // Background color
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: DropdownButton<Model>(
+                          value: selectedModel,
+                          isExpanded: true,
+                          underline: SizedBox(),
+                          items: models.map((model) {
+                            return DropdownMenuItem<Model>(
+                              value: model,
+                              child: Text(model.approveName),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedModel = value;
+                            });
+                          },
+                          hint: const Text(
+                              'Select a Model'), // Hint text when no model is selected
+                        ),
                       )
                     : const CircularProgressIndicator(),
-                PrimaryButton(title: "Next", process: (){
-                  if (selectedModel != null) {
-                    // Navigate to next screen with selected model
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AudioUploader(
-                          // jobId: "420297i39v92930",
-                            // selectedModel: selectedModel!
+                PrimaryButton(
+                  title: "Next",
+                  process: () {
+                    if (selectedModel != null) {
+                      // Navigate to next screen with selected model
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AudioUploader(
+                              // jobId: "420297i39v92930",
+                              // selectedModel: selectedModel!
+                              ),
                         ),
-                      ),
-                    );
-                  }
-                  else{
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      CustomSnackBar(
-                        backColor: kAmberColor,
-                        time: 2,
-                        title: 'A model must be selected',
-                        icon: Icons.warning_amber,
-                      ),
-                    );
-                  }
-                }),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        CustomSnackBar(
+                          backColor: kAmberColor,
+                          time: 2,
+                          title: 'A model must be selected',
+                          icon: Icons.warning_amber,
+                        ),
+                      );
+                    }
+                  },
+                  screenWidth: width,
+                ),
               ],
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:senses/pages/home.dart';
+import 'package:senses/pages/listening_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(fontFamily: "Poppins"),
       debugShowCheckedModeBanner: false,
-      home: const Home(),
+      home: Home(),
     );
   }
 }

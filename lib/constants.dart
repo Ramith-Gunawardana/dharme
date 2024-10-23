@@ -30,6 +30,12 @@ const kSubHeadingTextStyle = TextStyle(
   fontWeight: FontWeight.bold,
 );
 
+const kSubTitleTextStyle = TextStyle(
+  color: kDarkGreyColor,
+  fontSize: 16.0,
+  fontWeight: FontWeight.bold,
+);
+
 
 const kMainButtonTextStyle = TextStyle(
   color: kBrilliantWhite,

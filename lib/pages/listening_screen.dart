@@ -1,11 +1,16 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:senses/components/primary_button.dart';
+import 'package:senses/components/response_tile.dart';
+import 'package:senses/constants.dart';
 
 class AudioUploader extends StatefulWidget {
   @override
@@ -17,9 +22,10 @@ class _AudioUploaderState extends State<AudioUploader> {
   bool _isRecording = false;
   List<String> _displayNames = [];
   final String _awsEndpoint =
-      'https://4tnwcv11y4.execute-api.ap-south-1.amazonaws.com/predict?job_id=420297i39v92930'
       // 'https://4tnwcv11y4.execute-api.ap-south-1.amazonaws.com/predict?job_id=420297i39v92930'
-  ;
+      'http://192.168.8.101:5000/upload';
+  Timer? _timer;
+  Duration _duration = Duration.zero;
 
   @override
   void initState() {
@@ -27,12 +33,33 @@ class _AudioUploaderState extends State<AudioUploader> {
     _initRecorder();
   }
 
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _duration = Duration(seconds: _duration.inSeconds + 1);
+      });
+    });
+  }
+
+// Stops counting time
+  void _stopTimer() {
+    _timer?.cancel();
+  }
+
+// Formats recording time
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$twoDigitMinutes:$twoDigitSeconds';
+  }
+
   Future<void> _initRecorder() async {
     await Permission.microphone.request();
     await Permission.storage.request();
 
     await _recorder.openRecorder();
-    _recorder.setSubscriptionDuration(Duration(milliseconds: 500));
+    _recorder.setSubscriptionDuration(const Duration(milliseconds: 500));
   }
 
   Future<String> _getTemporaryDirectoryPath() async {
@@ -43,7 +70,11 @@ class _AudioUploaderState extends State<AudioUploader> {
   Future<void> _startRecording() async {
     if (!_recorder.isRecording) {
       _isRecording = true;
-      setState(() {});
+      setState(() {
+        _isRecording = true;
+        _duration = Duration.zero;
+      });
+      _startTimer();
 
       // Start the first recording chunk
       _recordChunk();
@@ -52,28 +83,29 @@ class _AudioUploaderState extends State<AudioUploader> {
 
   Future<void> _stopRecording() async {
     if (_recorder.isRecording) {
-      _isRecording = false;
       await _recorder.stopRecorder();
-      setState(() {});
+      setState(() {
+        _isRecording = false;
+      });
+      _stopTimer();
     }
   }
 
   Future<void> _recordChunk() async {
     while (_isRecording) {
-      final recordingPath = '${await _getTemporaryDirectoryPath()}/chunk_${DateTime.now().millisecondsSinceEpoch}.wav';
+      final recordingPath =
+          '${await _getDocumentsDirectoryPath()}/chunk_${DateTime.now().millisecondsSinceEpoch}.wav';
 
       await _recorder.startRecorder(
         toFile: recordingPath,
         codec: Codec.pcm16WAV,
       );
 
-      // Wait for 10 seconds before stopping the recorder
-      await Future.delayed(Duration(seconds: 10));
+      await Future.delayed(
+          const Duration(seconds: 10)); // Record for 10 seconds
 
-      // Stop the recording
       await _recorder.stopRecorder();
 
-      // Log the file path and check its existence
       final audioFile = File(recordingPath);
       print('Recording saved at: ${audioFile.path}');
       print('File exists: ${audioFile.existsSync()}');
@@ -83,6 +115,10 @@ class _AudioUploaderState extends State<AudioUploader> {
     }
   }
 
+  Future<String> _getDocumentsDirectoryPath() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
 
   Future<void> _uploadAudio(File audioFile) async {
     try {
@@ -95,13 +131,14 @@ class _AudioUploaderState extends State<AudioUploader> {
 
       // Add audio file to request
       request.files.add(await http.MultipartFile.fromPath(
-        'audio_file',  // This is the name the API expects
+        'file', // This is the name the API expects
         audioFile.path,
-        // contentType: MediaType('audio', 'wav'),  // Explicitly mention content type
+        contentType: MediaType('audio', 'wav'),
       ));
 
       // Log that request is being sent
-      print('Sending request to $_awsEndpoint with audio file ${audioFile.path}');
+      print(
+          'Sending request to $_awsEndpoint with audio file ${audioFile.path}');
 
       // Send the request
       final response = await request.send();
@@ -114,7 +151,8 @@ class _AudioUploaderState extends State<AudioUploader> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(responseBody);
         if (data['status'] == 'success') {
-          final displayName = data['display_names_for_training_classes']['display_name'];
+          final displayName =
+              data['display_names_for_training_classes']['display_name'];
           setState(() {
             _displayNames.add(displayName);
           });
@@ -132,32 +170,105 @@ class _AudioUploaderState extends State<AudioUploader> {
   @override
   void dispose() {
     _recorder.closeRecorder();
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(title: Text('Sound Classification')),
-      body: Column(
-        children: [
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _isRecording ? _stopRecording : _startRecording,
-            child: Text(_isRecording ? 'Stop Recording' : 'Start Recording'),
+      appBar: AppBar(
+        title: const Text(
+          'Communication Analyzer',
+          style: kSubHeadingTextStyle,
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 4,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          icon: const Icon(
+            Icons.navigate_before,
+            color: kDeepBlueColor,
           ),
-          SizedBox(height: 20),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _displayNames.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_displayNames[index]),
-                );
-              },
+        ),
+        flexibleSpace: Stack(
+          children: [
+            // Background Image
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background/noise_image.webp',
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        decoration: const BoxDecoration(
+            image: DecorationImage(
+          fit: BoxFit.cover,
+          image: AssetImage('assets/images/background/noise_image.webp'),
+        )),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 1,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: kDarkGreyColor,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _isRecording
+                          ? "Listening: ${_formatDuration(_duration)}"
+                          : "Analyze your Surrounding",
+                      style: kSubHeadingTextStyle,
+                    ),
+                    PrimaryButton(
+                      process: _isRecording ? _stopRecording : _startRecording,
+                      title:
+                          _isRecording ? 'Stop Listening' : 'Start Listening',
+                      screenWidth: width,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.0),
+              child: Text(
+                'Listen to your surrounding\'s Melody',
+                style: kSubTitleTextStyle,
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: ListView.builder(
+                itemCount: 10, //_displayNames.length,
+                itemBuilder: (context, index) {
+                  return const ResponseTile(
+                    title: "Dog Barking",
+                    iconName: "pet",
+                    hexColor: "#E4B1F0",
+                    accuracy: "50%",
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
