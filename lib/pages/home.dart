@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:senses/classes/custom_snack_bar.dart';
 import 'package:senses/components/primary_button.dart';
 import 'package:senses/components/secondary_button.dart';
 import 'dart:convert';
@@ -83,7 +84,7 @@ class _HomeState extends State<Home> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                SecondaryButton(title: "Fetch Models", process: fetchModels),
+                // SecondaryButton(title: "Fetch Models", process: fetchModels),
                 models.isNotEmpty
                     ? DropdownButton<Model>(
                         value: selectedModel,
@@ -101,14 +102,25 @@ class _HomeState extends State<Home> {
                       )
                     : const CircularProgressIndicator(),
                 PrimaryButton(title: "Next", process: (){
-                  if (selectedModel == null) {
+                  if (selectedModel != null) {
                     // Navigate to next screen with selected model
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ListeningScreen(
+                        builder: (context) => AudioUploader(
+                          // jobId: "420297i39v92930",
                             // selectedModel: selectedModel!
                         ),
+                      ),
+                    );
+                  }
+                  else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      CustomSnackBar(
+                        backColor: kAmberColor,
+                        time: 2,
+                        title: 'A model must be selected',
+                        icon: Icons.warning_amber,
                       ),
                     );
                   }
