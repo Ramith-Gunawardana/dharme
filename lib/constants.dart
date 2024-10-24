@@ -20,13 +20,13 @@ const kSuccessGreenColor = Color(0xFF4BB543);
 const kHeadingTextStyle = TextStyle(
   height: 1.4,
   color: kDeepBlueColor,
-  fontSize: 32.0,
+  fontSize: 24.0,
   fontWeight: FontWeight.bold,
 );
 
 const kSubHeadingTextStyle = TextStyle(
-  color: kDeepBlueColor,
-  fontSize: 20.0,
+  color: kDarkGreyColor,
+  fontSize: 16.0,
   fontWeight: FontWeight.bold,
 );
 

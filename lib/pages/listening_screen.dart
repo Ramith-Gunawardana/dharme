@@ -18,6 +18,7 @@ class AudioUploader extends StatefulWidget {
 }
 
 class _AudioUploaderState extends State<AudioUploader> {
+  // final RecorderController _recorderController = RecorderController();
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
   List<String> _displayNames = [];
@@ -31,6 +32,7 @@ class _AudioUploaderState extends State<AudioUploader> {
   void initState() {
     super.initState();
     _initRecorder();
+    // _recorderController.start();
   }
 
   void _startTimer() {
@@ -171,6 +173,8 @@ class _AudioUploaderState extends State<AudioUploader> {
   void dispose() {
     _recorder.closeRecorder();
     _timer?.cancel();
+    // _recorderController.stop();
+    // _recorderController.dispose();
     super.dispose();
   }
 
@@ -180,9 +184,9 @@ class _AudioUploaderState extends State<AudioUploader> {
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title:  Text(
           'Communication Analyzer',
-          style: kSubHeadingTextStyle,
+          style: kSubHeadingTextStyle.copyWith(color: kDeepBlueColor),
         ),
         backgroundColor: Colors.transparent,
         elevation: 4,
@@ -217,6 +221,17 @@ class _AudioUploaderState extends State<AudioUploader> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Center(
+            //   child:
+            //   AudioWaveforms(
+            //     size: Size(MediaQuery.of(context).size.width, 100.0),
+            //     recorderController: _recorderController,
+            //     waveStyle: const WaveStyle(
+            //       waveColor: Colors.blueAccent,
+            //       extendWaveform: true,
+            //     ),
+            //   ),
+            // ),
             Expanded(
               flex: 1,
               child: Container(

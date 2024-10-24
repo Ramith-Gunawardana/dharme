@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:senses/classes/custom_snack_bar.dart';
 import 'package:senses/components/primary_button.dart';
@@ -7,6 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:senses/classes/model.dart';
 import 'package:senses/constants.dart';
 import 'package:senses/pages/listening_screen.dart';
+import 'package:senses/classes/all_models.dart';
+import 'package:senses/classes/card_colors.dart';
+import 'package:senses/classes/most_used_models.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -66,7 +70,6 @@ class _HomeState extends State<Home> {
         body: Center(
           child: Container(
             width: width,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             decoration: const BoxDecoration(
               image: DecorationImage(
                 fit: BoxFit.cover,
@@ -74,78 +77,135 @@ class _HomeState extends State<Home> {
               ),
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Image(
-                  image: AssetImage("assets/gif/splash.gif"),
-                ),
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Text(
-                    "Pick your preferred Model!",
-                    style: kHeadingTextStyle,
-                    textAlign: TextAlign.center,
+                  padding:
+                      EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      children: [
+                        Text(
+                          "Welcome!",
+                          style: kHeadingTextStyle,
+                        ),
+                        Text(
+                          "Enhance your senses with us!",
+                          style: kSubHeadingTextStyle,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                // SecondaryButton(title: "Fetch Models", process: fetchModels),
-                models.isNotEmpty
-                    ? Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: kOceanBlueColor,
-                            width: 2,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(8), // Rounded corners
-                          color: Colors.white, // Background color
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: DropdownButton<Model>(
-                          value: selectedModel,
-                          isExpanded: true,
-                          underline: SizedBox(),
-                          items: models.map((model) {
-                            return DropdownMenuItem<Model>(
-                              value: model,
-                              child: Text(model.approveName),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedModel = value;
-                            });
-                          },
-                          hint: const Text(
-                              'Select a Model'), // Hint text when no model is selected
-                        ),
-                      )
-                    : const CircularProgressIndicator(),
-                PrimaryButton(
-                  title: "Next",
-                  process: () {
-                    if (selectedModel != null) {
-                      // Navigate to next screen with selected model
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AudioUploader(
-                              // jobId: "420297i39v92930",
-                              // selectedModel: selectedModel!
+                const Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                  child: Text(
+                    "Recent Models",
+                    style: kSubTitleTextStyle,
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: mostUsedModels.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: width / 2,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 6.0, vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: cardColors[index % cardColors.length],
+                            borderRadius: BorderRadius.circular(20.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(
+                                    0.2), // Shadow color with transparency
+                                spreadRadius: 1, // How far the shadow spreads
+                                blurRadius: 2, // How soft the shadow is
+                                offset: const Offset(
+                                    0, 2), // Offset in x and y direction
                               ),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        CustomSnackBar(
-                          backColor: kAmberColor,
-                          time: 2,
-                          title: 'A model must be selected',
-                          icon: Icons.warning_amber,
-                        ),
-                      );
-                    }
-                  },
-                  screenWidth: width,
+                            ],
+                          ),
+                          child: ListTile(
+                            title: Text(
+                              mostUsedModels[index]['name']!,
+                              style: kHeadingTextStyle,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                  child: Text(
+                    "All Models",
+                    style: kSubTitleTextStyle,
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: ListView.builder(
+                      itemCount: allModels.length,
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AudioUploader(),
+                              ),
+                            );
+                          },
+                          splashColor: Colors.blue
+                              .withOpacity(0.3), // Customize the splash color
+                          borderRadius: BorderRadius.circular(
+                              20.0), // Match ripple with widget shape
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 6.0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16.0, horizontal: 4.0),
+                            decoration: BoxDecoration(
+                              color: cardColors[index % cardColors.length],
+                              borderRadius: BorderRadius.circular(20.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(
+                                      0.2), // Shadow color with transparency
+                                  spreadRadius: 1, // How far the shadow spreads
+                                  blurRadius: 2, // How soft the shadow is
+                                  offset: const Offset(
+                                      0, 2), // Offset in x and y direction
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                allModels[index]['name']!,
+                                style: kHeadingTextStyle,
+                              ),
+                              subtitle: Text(
+                                allModels[index]['description']!,
+                                style: kSubHeadingTextStyle.copyWith(fontSize: 14.0),
+                                maxLines: 2,
+                                overflow: TextOverflow.fade,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),
