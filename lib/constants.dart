@@ -32,7 +32,7 @@ const kSubHeadingTextStyle = TextStyle(
 
 const kSubTitleTextStyle = TextStyle(
   color: kDarkGreyColor,
-  fontSize: 16.0,
+  fontSize: 14.0,
   fontWeight: FontWeight.bold,
 );
 

@@ -29,6 +29,9 @@ class ResponseTile extends StatelessWidget {
       'home': Icons.home,
       'car': Icons.directions_car,
       'settings': Icons.settings,
+      'bird': Icons.emoji_nature,
+      'train': Icons.train,
+
     };
 
     return iconsMap[iconName] ?? Icons.help_outline;
@@ -37,24 +40,51 @@ class ResponseTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        color: _hexToColor(hexColor),
-        border: Border.all(width: 1.0,color: kDeepBlueColor),
+        color: kBrilliantWhite,
         borderRadius: BorderRadius.circular(12.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2), // Shadow color with transparency
+            color:
+                Colors.black.withOpacity(0.2), // Shadow color with transparency
             spreadRadius: 1, // How far the shadow spreads
-            blurRadius: 6, // How soft the shadow is
+            blurRadius: 4, // How soft the shadow is
             offset: const Offset(0, 4), // Offset in x and y direction
           ),
         ],
       ),
       child: ListTile(
-        leading: Icon(_getIconData(iconName)),
-        title: Text(title),
-        trailing: Text(accuracy),
+        leading: Container(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _hexToColor(hexColor),
+              boxShadow: [
+                BoxShadow(
+                  color: _hexToColor(hexColor)
+                      .withOpacity(0.3), // Shadow color with transparency
+                  spreadRadius: 1, // How far the shadow spreads
+                  blurRadius: 4, // How soft the shadow is
+                  offset: const Offset(2, 6), // Offset in x and y direction
+                ),
+              ]),
+          child: Icon(
+            _getIconData(iconName),
+            color: kBrilliantWhite,
+          ),
+        ),
+        title: Text(
+          title,
+          style: kSubTitleTextStyle,
+        ),
+        trailing: Text(
+          accuracy,
+          style: kSubTitleTextStyle.copyWith(
+            color: _hexToColor(hexColor),
+          ),
+        ),
       ),
     );
   }

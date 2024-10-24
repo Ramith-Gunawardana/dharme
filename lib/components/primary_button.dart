@@ -8,22 +8,23 @@ class PrimaryButton extends StatelessWidget {
     required this.process,
     super.key,
     this.screenWidth,
+    required this.color,
   });
 
   final double? screenWidth;
   final String? title;
+  final Color color;
   final void Function()? process;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: screenWidth,
-      margin: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
       child: ElevatedButton(
         onPressed: process,
         style: ElevatedButton.styleFrom(
           elevation: 6.0,
-          backgroundColor: kDeepBlueColor,
+          backgroundColor: color,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),

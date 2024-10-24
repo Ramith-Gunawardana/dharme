@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:senses/classes/custom_snack_bar.dart';
 import 'package:senses/components/primary_button.dart';
 import 'package:senses/components/secondary_button.dart';
@@ -55,6 +56,33 @@ class _HomeState extends State<Home> {
     }
   }
 
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case "warning":
+        return Icons.warning;
+      case "home":
+        return Icons.home;
+      case "location_city":
+        return Icons.location_city;
+      case "nightlight_round":
+        return Icons.nightlight_round;
+      case "factory":
+        return Icons.factory;
+      case "nature":
+        return Icons.nature;
+      case "work":
+        return Icons.work;
+      case "park":
+        return Icons.park;
+      case "directions_car":
+        return Icons.directions_car;
+      case "tune":
+        return Icons.tune;
+      default:
+        return Icons.help; // Fallback icon
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -63,155 +91,88 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
-        body: Center(
-          child: Container(
-            width: width,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: AssetImage('assets/images/background/noise_image.webp'),
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage("assets/images/background/noise_image.webp"),
+                fit: BoxFit.cover),
+          ),
+          child: Column(
+            children: [
+              Container(
+                  margin: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: const Text(
+                    "Welcome!",
+                    style: kHeadingTextStyle,
+                  )),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, // Number of columns
+                      mainAxisSpacing: 10.0, // Vertical spacing
+                      // crossAxisSpacing: 10.0, // Horizontal spacing
+                      childAspectRatio: 0.8, // Make tiles square
+                    ),
+                    itemCount: allModels.length,
+                    itemBuilder: (context, index) {
+                      final item = allModels[index];
+                      return _buildTile(item);
+                    },
+                  ),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding:
-                      EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        Text(
-                          "Welcome!",
-                          style: kHeadingTextStyle,
-                        ),
-                        Text(
-                          "Enhance your senses with us!",
-                          style: kSubHeadingTextStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const Padding(
-                  padding:
-                      EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
-                  child: Text(
-                    "Recent Models",
-                    style: kSubTitleTextStyle,
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: mostUsedModels.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: width / 2,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 6.0, vertical: 8.0),
-                          decoration: BoxDecoration(
-                            color: cardColors[index % cardColors.length],
-                            borderRadius: BorderRadius.circular(20.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(
-                                    0.2), // Shadow color with transparency
-                                spreadRadius: 1, // How far the shadow spreads
-                                blurRadius: 2, // How soft the shadow is
-                                offset: const Offset(
-                                    0, 2), // Offset in x and y direction
-                              ),
-                            ],
-                          ),
-                          child: ListTile(
-                            title: Text(
-                              mostUsedModels[index]['name']!,
-                              style: kHeadingTextStyle,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const Padding(
-                  padding:
-                      EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
-                  child: Text(
-                    "All Models",
-                    style: kSubTitleTextStyle,
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: ListView.builder(
-                      itemCount: allModels.length,
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AudioUploader(),
-                              ),
-                            );
-                          },
-                          splashColor: Colors.blue
-                              .withOpacity(0.3), // Customize the splash color
-                          borderRadius: BorderRadius.circular(
-                              20.0), // Match ripple with widget shape
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 6.0),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 16.0, horizontal: 4.0),
-                            decoration: BoxDecoration(
-                              color: cardColors[index % cardColors.length],
-                              borderRadius: BorderRadius.circular(20.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(
-                                      0.2), // Shadow color with transparency
-                                  spreadRadius: 1, // How far the shadow spreads
-                                  blurRadius: 2, // How soft the shadow is
-                                  offset: const Offset(
-                                      0, 2), // Offset in x and y direction
-                                ),
-                              ],
-                            ),
-                            child: ListTile(
-                              title: Text(
-                                allModels[index]['name']!,
-                                style: kHeadingTextStyle,
-                              ),
-                              subtitle: Text(
-                                allModels[index]['description']!,
-                                style: kSubHeadingTextStyle.copyWith(fontSize: 14.0),
-                                maxLines: 2,
-                                overflow: TextOverflow.fade,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTile(Map<String, dynamic> item) {
+    return Column(
+      children: [
+        Expanded(
+          child: Material(
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AudioUploader()),
+                );
+              },
+              splashColor: kOceanBlueColor.withOpacity(0.5), // Color of the splash effect
+              borderRadius: BorderRadius.circular(10.0), // Match with the Container's border radius
+              child: Container(
+                padding: const EdgeInsets.all(30.0),
+                decoration: BoxDecoration(
+                  color: kOceanBlueColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Icon(
+                  _getIconData(item['icon']),
+                  size: 50,
+                  color: kOceanBlueColor,
+                ),
+              ),
+            ),
+          )
+
+
+        ),
+        const SizedBox(height: 8.0),
+        Text(
+          item['name'],
+          textAlign: TextAlign.center,
+          style: kSubTitleTextStyle,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }

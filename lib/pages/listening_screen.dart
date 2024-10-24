@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
@@ -11,6 +12,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:senses/components/primary_button.dart';
 import 'package:senses/components/response_tile.dart';
 import 'package:senses/constants.dart';
+import 'package:senses/classes/responses.dart';
 
 class AudioUploader extends StatefulWidget {
   @override
@@ -184,7 +186,7 @@ class _AudioUploaderState extends State<AudioUploader> {
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           'Communication Analyzer',
           style: kSubHeadingTextStyle.copyWith(color: kDeepBlueColor),
         ),
@@ -214,48 +216,58 @@ class _AudioUploaderState extends State<AudioUploader> {
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
         decoration: const BoxDecoration(
-            image: DecorationImage(
-          fit: BoxFit.cover,
-          image: AssetImage('assets/images/background/noise_image.webp'),
-        )),
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            image: AssetImage('assets/images/background/noise_image.webp'),
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Center(
-            //   child:
-            //   AudioWaveforms(
-            //     size: Size(MediaQuery.of(context).size.width, 100.0),
-            //     recorderController: _recorderController,
-            //     waveStyle: const WaveStyle(
-            //       waveColor: Colors.blueAccent,
-            //       extendWaveform: true,
-            //     ),
-            //   ),
-            // ),
             Expanded(
               flex: 1,
               child: Container(
+                width: width,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: kDarkGreyColor,
-                    width: 1.0,
-                  ),
+                  color: kOceanBlueColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Column(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      _isRecording
-                          ? "Listening: ${_formatDuration(_duration)}"
-                          : "Analyze your Surrounding",
-                      style: kSubHeadingTextStyle,
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              _isRecording
+                                  ? "Listening: ${_formatDuration(_duration)}"
+                                  : "Tap on Start",
+                              style: kSubHeadingTextStyle,
+                            ),
+                          ),
+                          PrimaryButton(
+                            process:
+                                _isRecording ? _stopRecording : _startRecording,
+                            title: _isRecording ? 'Stop' : 'Start',
+                            color: _isRecording?kWarningRedColor:kSuccessGreenColor,
+                            screenWidth: width / 3,
+                          ),
+                        ],
+                      ),
                     ),
-                    PrimaryButton(
-                      process: _isRecording ? _stopRecording : _startRecording,
-                      title:
-                          _isRecording ? 'Stop Listening' : 'Start Listening',
-                      screenWidth: width,
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Image(
+                          image: AssetImage(_isRecording
+                              ? "assets/gif/recording.webp"
+                              : "assets/gif/not_recording.webp"),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -271,13 +283,14 @@ class _AudioUploaderState extends State<AudioUploader> {
             Expanded(
               flex: 3,
               child: ListView.builder(
-                itemCount: 10, //_displayNames.length,
+                itemCount: responses.length,
                 itemBuilder: (context, index) {
-                  return const ResponseTile(
-                    title: "Dog Barking",
-                    iconName: "pet",
-                    hexColor: "#E4B1F0",
-                    accuracy: "50%",
+                  final tileData = responses[index];
+                  return  ResponseTile(
+                    title: tileData["title"]!,
+                    iconName: tileData["iconName"]!,
+                    hexColor: tileData["hexColor"]!,
+                    accuracy: tileData["accuracy"]!,
                   );
                 },
               ),

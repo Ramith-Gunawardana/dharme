@@ -1,43 +1,52 @@
 List<Map<String, String>> allModels = [
   {
     "name": "Safety Alert Model",
-    "description": "Specialized for detecting emergency sounds like fire alarms, sirens, and warning bells."
+    "description": "Specialized for detecting emergency sounds like fire alarms, sirens, and warning bells.",
+    "icon": "warning"
   },
   {
     "name": "Home Environment Model",
-    "description": "Focused on sounds commonly found in residential areas, such as doorbells, barking dogs, and kitchen appliances."
+    "description": "Focused on sounds commonly found in residential areas, such as doorbells, barking dogs, and kitchen appliances.",
+    "icon": "home"
   },
   {
     "name": "Urban Sound Model",
-    "description": "Optimized for city sounds like traffic, car horns, construction, and street music."
+    "description": "Optimized for city sounds like traffic, car horns, construction, and street music.",
+    "icon": "location_city"
   },
   {
     "name": "Quiet Night Model",
-    "description": "Ideal for nighttime environments, detecting subtle sounds such as footsteps, whispers, and light rain."
+    "description": "Ideal for nighttime environments, detecting subtle sounds such as footsteps, whispers, and light rain.",
+    "icon": "nightlight_round"
   },
   {
     "name": "Industrial Noise Model",
-    "description": "Designed for industrial settings to detect machinery, drills, alarms, and equipment malfunctions."
+    "description": "Designed for industrial settings to detect machinery, drills, alarms, and equipment malfunctions.",
+    "icon": "factory"
   },
   {
     "name": "Nature Sound Model",
-    "description": "Focuses on natural sounds like birds chirping, rustling leaves, and flowing water."
+    "description": "Focuses on natural sounds like birds chirping, rustling leaves, and flowing water.",
+    "icon": "nature"
   },
   {
     "name": "Office Environment Model",
-    "description": "Detects sounds commonly found in offices, such as phone rings, typing, and printers."
+    "description": "Detects sounds commonly found in offices, such as phone rings, typing, and printers.",
+    "icon": "work"
   },
   {
     "name": "Park and Outdoor Model",
-    "description": "Aimed at detecting sounds in parks, such as children playing, distant music, and people talking."
+    "description": "Aimed at detecting sounds in parks, such as children playing, distant music, and people talking.",
+    "icon": "park"
   },
   {
     "name": "Vehicle Detection Model",
-    "description": "Specializes in detecting vehicle sounds, including engines, car horns, and passing trucks."
+    "description": "Specializes in detecting vehicle sounds, including engines, car horns, and passing trucks.",
+    "icon": "directions_car"
   },
   {
     "name": "Custom Alert Model",
-    "description": "A customization model for users to focus on specific sound categories they find most important in their daily environment."
+    "description": "A customization model for users to focus on specific sound categories they find most important in their daily environment.",
+    "icon": "tune"
   }
 ];
-
