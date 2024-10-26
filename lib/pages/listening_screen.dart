@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
@@ -13,7 +11,6 @@ import 'package:senses/classes/prediction.dart';
 import 'package:senses/components/primary_button.dart';
 import 'package:senses/components/response_tile.dart';
 import 'package:senses/constants.dart';
-import 'package:senses/classes/responses.dart';
 
 class AudioUploader extends StatefulWidget {
   final String? jobId;
@@ -210,7 +207,6 @@ class _AudioUploaderState extends State<AudioUploader> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         title: Text(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:senses/pages/home.dart';
-import 'package:senses/pages/listening_screen.dart';
+import 'package:senses/pages/environment_classification_screen.dart';
 
 void main() {
   runApp(const MyApp());

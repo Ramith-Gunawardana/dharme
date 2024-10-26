@@ -1,17 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:senses/classes/custom_snack_bar.dart';
-import 'package:senses/components/primary_button.dart';
-import 'package:senses/components/secondary_button.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:senses/classes/model.dart';
 import 'package:senses/constants.dart';
 import 'package:senses/pages/listening_screen.dart';
-import 'package:senses/classes/all_models.dart';
-import 'package:senses/classes/card_colors.dart';
-import 'package:senses/classes/most_used_models.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
