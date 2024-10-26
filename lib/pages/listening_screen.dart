@@ -175,6 +175,7 @@ class _AudioUploaderState extends State<AudioUploader> {
               '${(probability * 100).toStringAsFixed(2)}%';
 
           Prediction newPrediction = Prediction(
+            displayClass: displayData['class'] ?? '',
             displayName: displayData['display_name'] ?? '',
             icon: displayData['icon'] ?? 'default_icon',
             color: displayData['color']?.toString() ?? '#FFFFFF',
@@ -341,8 +342,7 @@ class _AudioUploaderState extends State<AudioUploader> {
                               title: prediction.displayName,
                               iconName: prediction.icon,
                               hexColor: prediction.color,
-                              accuracy: prediction.displayName ==
-                                      'Cannot recognize noise'
+                              accuracy: prediction.displayClass == 'other'
                                   ? ''
                                   : prediction.prediction,
                             );
