@@ -23,9 +23,11 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<Model> models = [];
   Model? selectedModel;
+  bool isLoading = false;
 
   // Allows fetching models in creating the context
   Future<void> loadModels() async {
+    setState(() => isLoading = true);
     try {
       List<Model> fetchedModels = await fetchModels();
       setState(() {
@@ -33,7 +35,15 @@ class _HomeState extends State<Home> {
         selectedModel = models.isNotEmpty ? models.first : null;
       });
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        CustomSnackBar(
+            backColor: kWarningRedColor,
+            time: 3,
+            title: 'Failed to fetch models'),
+      );
       print('Error fetching models: $e');
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -45,6 +55,7 @@ class _HomeState extends State<Home> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      // print(data);
       if (data['status'] == 'success') {
         List<dynamic> jobs = data['jobs'];
         return jobs.map((job) => Model.fromJson(job)).toList();
@@ -52,6 +63,12 @@ class _HomeState extends State<Home> {
         throw Exception('Failed to fetch models');
       }
     } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        CustomSnackBar(
+            backColor: kWarningRedColor,
+            time: 3,
+            title: 'Failed to connect to API'),
+      );
       throw Exception('Failed to connect to API');
     }
   }
@@ -78,8 +95,18 @@ class _HomeState extends State<Home> {
         return Icons.directions_car;
       case "tune":
         return Icons.tune;
+      case "pets":
+        return Icons.pets;
+      case "train":
+        return Icons.train;
+      case "phone_in_talk":
+        return Icons.phone_in_talk;
+      case "alarm":
+        return Icons.alarm;
+      case "child_care":
+        return Icons.child_care;
       default:
-        return Icons.help; // Fallback icon
+        return Icons.auto_awesome; // Fallback icon
     }
   }
 
@@ -93,80 +120,89 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("assets/images/background/noise_image.webp"),
-                fit: BoxFit.cover),
-          ),
-          child: Column(
-            children: [
-              Container(
-                  margin: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: const Text(
-                    "Welcome!",
-                    style: kHeadingTextStyle,
-                  )),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3, // Number of columns
-                      mainAxisSpacing: 10.0, // Vertical spacing
-                      // crossAxisSpacing: 10.0, // Horizontal spacing
-                      childAspectRatio: 0.8, // Make tiles square
-                    ),
-                    itemCount: allModels.length,
-                    itemBuilder: (context, index) {
-                      final item = allModels[index];
-                      return _buildTile(item);
-                    },
+        body: RefreshIndicator(
+          onRefresh: fetchModels,
+          child: Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                  image:
+                      AssetImage("assets/images/background/noise_image.webp"),
+                  fit: BoxFit.cover),
+            ),
+            child: isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: kDeepBlueColor),
+                  )
+                : Column(
+                    children: [
+                      Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: const Text(
+                            "Welcome!",
+                            style: kHeadingTextStyle,
+                          )),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GridView.builder(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3, // Number of columns
+                              mainAxisSpacing: 10.0, // Vertical spacing
+                              // crossAxisSpacing: 10.0, // Horizontal spacing
+                              childAspectRatio: 0.7, // Make tiles square
+                            ),
+                            itemCount: models.length,
+                            itemBuilder: (context, index) {
+                              final item = models[index];
+                              return _buildTile(item);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTile(Map<String, dynamic> item) {
+  Widget _buildTile(Model model) {
     return Column(
       children: [
-        Expanded(
-          child: Material(
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AudioUploader()),
-                );
-              },
-              splashColor: kOceanBlueColor.withOpacity(0.5), // Color of the splash effect
-              borderRadius: BorderRadius.circular(10.0), // Match with the Container's border radius
-              child: Container(
-                padding: const EdgeInsets.all(30.0),
-                decoration: BoxDecoration(
-                  color: kOceanBlueColor.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10.0),
+        Material(
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AudioUploader(
+                    jobId: model.jobId,
+                    approveName: model.approveName,
+                  ),
                 ),
-                child: Icon(
-                  _getIconData(item['icon']),
-                  size: 50,
-                  color: kOceanBlueColor,
-                ),
+              );
+            },
+            splashColor: kOceanBlueColor.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(10.0),
+            child: Container(
+              padding: const EdgeInsets.all(30.0),
+              decoration: BoxDecoration(
+                color: kOceanBlueColor.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Icon(
+                _getIconData(model.iconName),
+                size: 50,
+                color: kOceanBlueColor,
               ),
             ),
-          )
-
-
+          ),
         ),
         const SizedBox(height: 8.0),
         Text(
-          item['name'],
+          model.approveName, // Display approve name
           textAlign: TextAlign.center,
           style: kSubTitleTextStyle,
           maxLines: 2,

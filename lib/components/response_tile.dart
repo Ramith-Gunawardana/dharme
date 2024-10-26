@@ -24,23 +24,60 @@ class ResponseTile extends StatelessWidget {
 
 // Helper function for defining icon
   IconData _getIconData(String iconName) {
-    Map<String, IconData> iconsMap = {
-      'pets': Icons.pets,
-      'home': Icons.home,
-      'car': Icons.directions_car,
-      'settings': Icons.settings,
-      'bird': Icons.emoji_nature,
-      'train': Icons.train,
-
-    };
-
-    return iconsMap[iconName] ?? Icons.help_outline;
+    switch (iconName) {
+      case "flutter_dash":
+        return Icons.flutter_dash;
+      case "pets":
+        return Icons.pets;
+      case "cruelty_free":
+        return Icons.cruelty_free;
+      case "construction":
+        return Icons.construction;
+      case "directions_car":
+        return Icons.directions_car;
+      case "airport_shuttle":
+        return Icons.airport_shuttle;
+      case "local_shipping":
+        return Icons.local_shipping;
+      case "pedal_bike":
+        return Icons.pedal_bike;
+      case "train":
+        return Icons.train;
+      case "flight":
+        return Icons.flight;
+      case "alarm_on":
+        return Icons.alarm_on;
+      case "notifications_active":
+        return Icons.notifications_active;
+      case "phone_in_talk":
+        return Icons.phone_in_talk;
+      case "woman":
+        return Icons.woman;
+      case "man":
+        return Icons.man;
+      case "family_restroom":
+        return Icons.family_restroom;
+      case "thunderstorm":
+        return Icons.thunderstorm;
+      case "radio":
+        return Icons.radio;
+      case "desktop_windows":
+        return Icons.desktop_windows;
+      case "meeting_room":
+        return Icons.meeting_room;
+      case "campaign":
+        return Icons.campaign;
+      case "music_note":
+        return Icons.music_note;
+      default:
+        return Icons.help_outline; // Default icon if no match is found
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: kBrilliantWhite,
